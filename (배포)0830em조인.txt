@@ -1,0 +1,299 @@
+*--------------------------------------------------------------------------------
+-- emp,dept,salarygrade
+system cls ;
+show tables ;
+
+DROP TABLE EMP;
+DROP TABLE DEPT;
+DROP TABLE SALGRADE;
+commit ;
+
+ CREATE TABLE DEPT(
+    DEPTNO int(2) primary key,
+    DNAME VARCHAR(14),
+    LOC   VARCHAR(13)
+ );
+
+ CREATE TABLE EMP(
+   EMPNO Int(4) PRIMARY KEY,
+   ENAME VARCHAR(10),
+   JOB   VARCHAR(9),
+   MGR   INT(4),
+   HIREDATE DATE,
+   SAL   NUMERIC(7,2),
+   COMM  NUMERIC(7,2),
+   DEPTNO int(2)  
+ );
+
+CREATE TABLE SALGRADE(
+  GRADE INT(1),
+  LOSAL NUMERIC(7, 2),
+  HISAL NUMERIC(7, 2)
+);
+commit;
+
+
+INSERT INTO DEPT VALUES (10,'ACCOUNTING','NEW YORK');
+INSERT INTO DEPT VALUES (20,'RESEARCH','DALLAS');
+INSERT INTO DEPT VALUES (30,'SALES','CHICAGO');
+INSERT INTO DEPT VALUES (40,'OPERATIONS','BOSTON');
+INSERT INTO DEPT VALUES (55,'coder','seoul'); 
+commit ;
+select * from  dept ;
+
+
+INSERT INTO EMP  VALUES (7369,'SMITH','CLERK',    7902, STR_TO_DATE('17-12-2010', '%d-%m-%Y'), 1600, 300, 30);
+INSERT INTO EMP  VALUES (7499,'ALLEN','SALESMAN', 7698, STR_TO_DATE('20-2-2011', '%d-%m-%Y'), 1600, 300, 30);
+INSERT INTO EMP  VALUES (7521,'WARD','SALESMAN',  7698, STR_TO_DATE('22-2-2011', '%d-%m-%Y'), 1250, 500, 30);
+INSERT INTO EMP  VALUES (7566,'JONES','MANAGER',  7839, STR_TO_DATE('2-4-2011', '%d-%m-%Y'), 2975, null, 20);
+INSERT INTO EMP  VALUES (7654,'MARTIN','SALESMAN',7698, STR_TO_DATE(-28-09-2011, '%d-%m-%Y'), 1250, 1400, 30);
+INSERT INTO EMP  VALUES (7698,'BLAKE','MANAGER',  7839, STR_TO_DATE('1-5-2011', '%d-%m-%Y'), 2850, null, 30);
+INSERT INTO EMP  VALUES (7782,'CLARK','MANAGER',  7839, STR_TO_DATE('9-6-2011', '%d-%m-%Y'), 2450, null, 30);
+INSERT INTO EMP  VALUES (7788,'SCOTT','ANALYST',  7566, STR_TO_DATE('13-7-2017', '%d-%m-%Y'), 3000, null, 20);
+insert into emp values( 7839, 'KING', 'PRESIDENT', null, STR_TO_DATE ('17-11-2011','%d-%m-%Y'), 5000, null, 10); 
+insert into emp values( 7844, 'TURNER', 'SALESMAN', 7698, STR_TO_DATE('8-9-2011','%d-%m-%Y'), 1500, 0, 30); 
+insert into emp values( 7876, 'ADAMS', 'CLERK', 7788, STR_TO_DATE('13-7-2017', '%d-%m-%Y'), 1100, null, 20); 
+insert into emp values( 7900, 'JAMES', 'CLERK', 7698, STR_TO_DATE('3-12-2011','%d-%m-%Y'), 950, null, 30); 
+insert into emp values( 7902, 'FORD', 'ANALYST', 7566, STR_TO_DATE('3-12-2011','%d-%m-%Y'), 3000, null, 20); 
+insert into emp values( 7934, 'MILLER', 'CLERK', 7782, STR_TO_DATE('23-1-2012','%d-%m-%Y'), 1300, null, 10); 
+
+insert into emp values( 8800, 'kim', 'teacher', 7782, STR_TO_DATE('23-1-2022','%d-%m-%Y'), 600, null, 10); 
+insert into emp values( 9900, 'lee', 'teacher', 7782, STR_TO_DATE('14-10-2022','%d-%m-%Y'), 350, null, 10); 
+insert into emp values( 8811, 'goo', 'teacher', 7782, now(), 7900, null, 30); 
+insert into emp values( 9911, 'choi', 'teacher', 7782, CURRENT_TIMESTAMP, 4500, null, 20);  
+commit;
+select * from  emp ; 
+
+INSERT INTO SALGRADE VALUES (1, 700, 1200);
+INSERT INTO SALGRADE VALUES (2, 1201, 1400);
+INSERT INTO SALGRADE VALUES (3, 1401, 2000);
+INSERT INTO SALGRADE VALUES (4, 2001, 3000);
+INSERT INTO SALGRADE VALUES (5, 3001, 9999);
+commit;
+select * from  SALGRADE ;
+
+
+mysql> select  sysdate() ;
+mysql> select  current_time() ;
+mysql> select  now() ;
+
+
+
+--데이터베이스 확인
+mysql> select database() ;
+
+-- Scalar Subquery
+-- 직업이 ‘MANAGER’인 사원의 사원명, 부서명을 조회하는 예제
+SQL>
+   SELECT ename,
+    (SELECT dname FROM dept d WHERE d.deptno = e.deptno) deptno
+   FROM emp e
+   WHERE job ='MANAGER';
+ 
+ENAME      DEPTNO
+---------- --------------
+JONES      RESEARCH
+BLAKE      SALES
+CLARK      ACCOUNTING
+#----------------------------------------------------------------
+
+--inner 조인
+SQL> inner조인성공
+  select empno, ename, job, dname
+  from emp, dept
+   where emp.deptno = dept.deptno ;
+
+SQL> inner조인성공
+   select empno, ename, job, dname
+   from emp inner join  dept
+   on emp.deptno=dept.deptno ;
+
+
+SQL> inner조인성공
+   select  e.empno, e.ename, d.deptno,  d.dname, d.loc
+   from emp e,  dept  d
+   where  e.deptno = d.deptno ; 
+
+#----------------------------------------------------------------
+
+drop table student ;
+create table student(
+  idx int(4) auto_increment primary key  ,
+  name  varchar(10) not null,
+  kor int(3)  default 0,
+  eng int(3)  default 0,
+  mat int(3)  default 0
+);
+commit ;
+insert into student(name,kor,eng,mat) values('둘리짱', 80, 80, 95);
+insert into student(name,kor,eng,mat) values('또치군', 75,90,65);
+insert into student(name,kor,eng,mat) values('고길동', 100,95,90);
+insert into student(name,kor,eng,mat) values('마이콜', 60,60,60);
+insert into student(name,kor,eng,mat) values('도우넛', 75,80,75);
+insert into student(name,kor,eng,mat) values('희동이', 80, 78, 90);
+commit;
+select * from  student;
+
+
+
+ 문제C] 고길동씨 가족 성적처리  dense_rank()/rank() 더권장
+ SQL> select idx , name , kor , eng , mat from student ;
+
++-----+--------+------+------+------+-------+------+------+
+| idx | name   | kor  | eng  | mat  | total | avg  | 순위 |
++-----+--------+------+------+------+-------+------+------+
+|   4 | 고길동 |  100 |   95 |   90 |   285 |   95 |    1 |
+|   1 | 둘리짱 |   80 |   80 |   95 |   255 |   85 |    2 |
+|   2 | 둘리짱 |   80 |   80 |   95 |   255 |   85 |    2 |
+|   7 | 희동이 |   80 |   78 |   90 |   248 |   82 |    4 |
+|   3 | 또치군 |   75 |   90 |   65 |   230 |   76 |    5 |
+|   6 | 도우넛 |   75 |   80 |   75 |   230 |   76 |    5 |
+|   5 | 마이콜 |   60 |   60 |   60 |   180 |   60 |    7 |
++-----+--------+------+------+------+-------+------+------+
+
+rank() 함수 : 순위를 출력하는 함수   
+dense_rank() :공동순위   
+ select  empno, ename, sal, dense_rank() over(order by sal desc) "급여순위"
+  from emp;
+
+ select empno, ename, sal, rank() over(order by sal desc) "급여순위"
+  from emp;
+
+--누적치
+  select ename, sal, sum(sal) over(order by sal asc)  누적치
+  from emp;
+
+
+ SQL> 축합격/재시험
+    select idx , name , kor , eng , mat  from student ;
++-----+--------+------+------+------+-------+------+--------+
+| idx | name   | kor  | eng  | mat  | total | avg  | 결과   |
++-----+--------+------+------+------+-------+------+--------+
+|   4 | 고길동 |  100 |   95 |   90 |   285 |   95 | 축합격 |
+|   1 | 둘리짱 |   80 |   80 |   95 |   255 |   85 | 축합격 |
+|   2 | 둘리짱 |   80 |   80 |   95 |   255 |   85 | 축합격 |
+|   7 | 희동이 |   80 |   78 |   90 |   248 |   82 | 축합격 |
+|   3 | 또치군 |   75 |   90 |   65 |   230 |   76 | 재시험 |
+|   6 | 도우넛 |   75 |   80 |   75 |   230 |   76 | 재시험 |
+|   5 | 마이콜 |   60 |   60 |   60 |   180 |   60 | 재시험 |
++-----+--------+------+------+------+-------+------+--------+
+7 rows in set (0.00 sec)
+#----------------------------------------------------------------
+--서브쿼리 부하직원이 있는 사람 조회
+SQL> mgr매니저역할이 되는사람 6건 
+  select  * from emp
+   where empno in (select ifnull(mgr, 0) from emp) ;
+
+
+--부하직원이 없는 사람 조회 11건
+ SQL> 
+  select  * from emp  e 
+  where e.empno not  in (
+   select   m.mgr from emp m 
+    where  e.empno = m.mgr) ; 
+
+
+
+#----------------------------------------------------------------
+-- 제약 (constraints)
+
+제약조건(constraint)이란 데이터의 무결성을 지키기 위해, 데이터를 입력받을 때 실행되는 검사 규칙을 의미한다.
+ not null
+ unique 중복데이터값 저장할수 없음
+ primary key = not null + unique
+ foreign key = 다른테이블과 연결
+ default 
+
+
+drop table test1 ;
+CREATE TABLE Test1 (  
+  ID INT PRIMARY KEY,   
+  Name VARCHAR(30),    
+  wDate DATE,    
+  hit INT
+);
+commit ;
+
+
+drop TABLE Test2;
+CREATE TABLE Test2( 
+  ID INT,   
+  num INT,   
+  FOREIGN KEY (num)  
+  REFERENCES Test1(ID) ON UPDATE CASCADE
+);
+
+
+SELECT * FROM information_schema.table_constraints ;
+SELECT * FROM information_schema.table_constraints WHERE  table_name ='test2';
+
+
+ON DELETE
+ ㄴ참조되는 테이블의 값이 삭제될 경우의 동작을 ON DELETE 구문으로 설정
+ON UPDATE
+ ㄴ참조되는 테이블의 값이 수정될 경우의 동작을 ON UPDATE 구문으로 설정
+
+설정할수있는 동작
+ ㄴCASCADE : 참조되는 테이블에서 데이터를 삭제하거나 수정하면 참조하는 테이블에서도 삭제와 수정이 같이 이루어짐
+ ㄴSET NULL : 참조되는 테이블에서 데이터를 삭제하거나 수정하면 참조하는 테이블의 데이터는 NULL로 변경됨
+ ㄴNO ACTION : 참조되는 테이블에서 데이터를 삭제하거나 수정하면 참조하는 테이블의 데이터는 변경되지 않음
+ ㄴSET DEFAULT : 참조되는 테이블에서 데이터를 삭제하거나 수정하면 참조하는 테이블의 데이터는 ?필드의 기본값으로 설정
+ ㄴRESTRICT : 참조하는 테이블에 데이터가 남아 있으면 참조되는 테이블의 데이터를 삭제하거나 수정할 수 없음
+
+
+drop table  guest ;
+create table  guest (
+ sabun int  primary key ,
+ name varchar(10) ,
+ title varchar(20) ,
+ wdate date,
+ pay int 
+);
+commit ;
+
+insert into  guest values( 1100, 'kim', 'book', now(), 34 ) ;
+insert into  guest values( 3300, 'lee', 'note', now(), 98 ) ;
+insert into  guest values( 5500, 'park', 'rain', now(), 56 ) ;
+select * from   guest ;
+commit ;
+
+
+ drop table guestreply; 
+ create table  guestreply (   
+  num int(4) auto_increment primary key  ,
+  writer varchar(10) not null,
+  content varchar(10)not null,
+  sabun int(4) not null      
+);
+desc  guestreply ;
+commit ; 
+
+
+SQL> alter table guestreply  drop constraint  sabun_fk;  
+SQL> alter table guestreply  add  constraint  sabun_fk 
+     foreign key(sabun) references guest(sabun) on delete cascade;
+SQL> commit ; 
+
+
+SQL> SELECT * FROM information_schema.table_constraints WHERE  table_name ='guestreply';
+
+ insert into guestreply(writer,content,sabun)  values('aa','aa', 5500 ); 
+ insert into guestreply(writer,content,sabun)  values('bb','bb',5500 );
+ insert into guestreply(writer,content,sabun)  values( 'cc','cc', 5500 );  
+ commit ;
+ insert into guestreply(writer,content,sabun)  values( 'dd','dd', 2234 );   --에러
+ commit ;
+ insert into guestreply(writer,content,sabun)  values('ee','ee', 1100 );     
+ commit ;
+
+ select * from  guest;
+ select * from  guestreply;
+ delete from guest  where  sabun=3300;
+ select * from  guestreply; 
+ commit ;
+
+
+
+
+
+
