@@ -1,0 +1,36 @@
+
+drop table client ;
+create table client (
+   ct_no int(3) primary key,
+   ct_name varchar(10) ,
+   ct_grade varchar(2)
+);
+
+drop table corder;
+create table corder(
+  order_id  int(4) primary key,
+  order_date date,
+  ct_no int(3),
+  pt_id  varchar(5),
+  order_cnt int(2)
+);
+commit ;
+
+insert into client values( 001, 'kim', 'A');
+insert into client values( 002, 'lee', 'S');
+insert into client values( 003, 'goo', 'B');
+insert into client values( 004, 'park', 'C');
+insert into client values( 005, 'choi', 'B');
+insert into client values( 006, 'hong', 'S');
+insert into client values( 007, 'kang', 'A');
+commit ;
+select * from client;
+
+insert into corder values( 9900,  STR_TO_DATE('09-05-2021', '%d-%m-%Y'), 003, '엘쥐', 9);
+insert into corder values( 9911,  STR_TO_DATE('30-12-2022', '%d-%m-%Y'), 005, '글구', 7);
+insert into corder values( 9922,  STR_TO_DATE('23-06-2021', '%d-%m-%Y'), 003, '음다', 3);
+insert into corder values( 9933,  STR_TO_DATE('05-11-2022', '%d-%m-%Y'), 004, '마존', 8);
+insert into corder values( 9944,  STR_TO_DATE('17-02-2021', '%d-%m-%Y'), 004, '오라', 5);
+insert into corder values( 9955,  STR_TO_DATE('17-02-2021', '%d-%m-%Y'), 002, '삼선', 6);
+commit ;
+select * from corder;
