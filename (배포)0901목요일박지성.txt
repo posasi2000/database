@@ -1,0 +1,443 @@
+ system cls; 
+*-------------------------------------------------------------------------------
+mysql> show databases ;
+mysql> use 데이터베이스이름 ;
+
+
+  drop table book;
+  drop table customer;
+  drop table orders;
+  drop table imported_book;
+  commit ;
+
+ create table book(
+   bookid int(2) primary key,
+   bookname varchar(40),
+   publisher varchar(40),
+   price int(8)
+ );
+
+ create table customer(
+   custid int(2) primary key,
+   name varchar(40),
+   address varchar(50),
+  phone varchar(20)
+ );
+  
+ create table orders(
+   orderid int(2) primary key,
+   custid  int(2) references customer(custid),
+   bookid int(2) references book(bookid),
+   saleprice int(8),
+   orderdate Date
+ );
+ commit ;
+
+
+  insert into book values(1,'축구의 역사','굿스포츠',7000);
+  insert into book values(2,'축구아는여자','나무수',13000);
+  insert into book values(3,'축구의 이해','대한미디어',22000);
+  insert into book values(4,'골프 바이블','대한미디어',35000);  --골프 바이블 아무도 안삼/제일비싼책
+  insert into book values(5,'피겨 교본','굿스포츠',8000);
+  insert into book values(6,'역도 단계별기술','굿스포츠',6000);
+  insert into book values(7,'아구의 추억','이상미디어',20000);
+  insert into book values(8,'야구를 부탁해','이상미디어',13000);   ---추신수,장미란이 구매함
+  insert into book values(9,'올림픽 이야기','삼성당',7500);       --올림픽 이야기는 아무도 안삼
+  insert into book values(10,'Olympic Champions','Pearson',13000);  --김연아,장미란 구매한함
+  select * from book ;
+
+  insert into customer values(1,'박지성','영국 맨체스타','000-5000-0001');
+  insert into customer values(2,'김연아','대한민국 서울','000-6000-0001');
+  insert into customer values(3,'장미란','대한민국 강원도','000-7000-0001');
+  insert into customer values(4,'추신수','미국 클리블랜드','000-8000-0001');
+  insert into customer values(5,'박세리','대한민국 대전',NULL);
+  select * from customer ;
+
+ -- orders(orderid주문번호 ,custid고객번호, bookid책번호, saleprice, orderdate );
+  insert into orders values(1,1,1,6000, now() );    --박지성이 구매한 책  '축구의역사'
+  insert into orders values(2,1,3,21000,  now() );  --박지성이 구매한 책  '축구의이해'
+  insert into orders values(3,2,5,8000,  now() );
+  insert into orders values(4,3,6,6000,  now() );
+  insert into orders values(5,4,7,20000,  now() );
+  insert into orders values(6,1,2,12000,  now() );   --박지성이 구매한 책  '축구아는여자'
+  insert into orders values(7,4,8,13000,  now() );
+  insert into orders values(8,3,10,12000,  now() );
+  insert into orders values(9,2,10,7000,  now() );
+  insert into orders values(10,3,8,13000 ,  now());
+  select * from orders;   
+
+
+ create table imported_book(
+   bookid int,
+   bookname varchar(30),
+   publisher varchar(30),
+   price int(8)
+ );
+ commit ;
+
+  insert into imported_book values(21,'Zen Golf','Pearson', 12000);
+  insert into imported_book values(22,'Soccer skills','Human kinetics', 15000);
+  select * from  imported_book;
+  commit;
+
+---------------------------------------------------------------------------------------------
+ 문제1]-- 아래처럼 출력하는 쿼리문장 작성
++--------+----------+-------+
+| custid | 도서수량 | 총액  |
++--------+----------+-------+
+|      1 |        3 | 39000 |
+|      2 |        2 | 15000 |
+|      3 |        3 | 31000 |
+|      4 |        2 | 33000 |
++--------+----------+-------+
+4 rows in set (0.00 sec)
+
+
+
+ -- having은 group by 절의 결과 나타나는 그룹을 제한하는 역할
+ 문제2]-- 주문 결과가 두 권 이상일 경우만 검색
++--------+----------+
+| custid | 도서수량 |
++--------+----------+
+|      1 |        2 |
+|      4 |        2 |
+|      3 |        2 |
++--------+----------+
+3 rows in set (0.00 sec)
+
+
+ mysql> select * from customer ; 
+ mysql> select * from orders;  
+문제3]--orders에 custid로 customer과 join하여 주소로 맵핑하여 합계를 출력
++--------+-----------------+-------+
+| custid | address         | total |
++--------+-----------------+-------+
+|      1 | 영국 맨체스타    | 39000 |
+|      2 | 대한민국 서울    | 15000 |
+|      3 | 대한민국 강원도  | 38000 |
+|      4 | 미국 클리블랜드  | 33000 |
++--------+-----------------+-------+
+
+
+문제4]-- orders의 주문 정보를 받아 이름으로 맵핑하여 평균 주문 price를 출력
++--------+------------+
+| name   | avg        |
++--------+------------+
+| 박지성 | 13000.0000 |
+| 김연아 |  7500.0000 |
+| 장미란 | 10333.3333 |
+| 추신수 | 16500.0000 |
++--------+------------+
+4 rows in set (0.00 sec)
+
+
+문제5]-- customer의 custid 값이 3보다 작은 경우와 orders의 custid가 동일한 경우에 saleprice의 합
++-------+
+| total |
++-------+
+| 85000 |
++-------+
+1 row in set (0.00 sec)
+
+
+
+
+문제6]-- 제일비싼책 출력 
+ select bookname  from book
+ where price = (select max(price) from book);
++-------------+
+| bookname    |
++-------------+
+| 골프 바이블 |
++-------------+
+1 row in set (0.00 sec)
++-------------+
+
+
+문제7]-- 대한미디어에서 출판한 도서를 구매한 고객의 이름 -박지성만 대한미디어에서 교재 구매함
++--------+
+| name   |
++--------+
+| 박지성 |
++--------+
+1 row in set (0.00 sec)
+
+
+서브쿼리=Subquery
+
+문제8]-- 스칼라부속질의(select부속질의) 
+ +--------+-------+
+| name   | total |
++--------+-------+
+| 박지성 | 39000 |
+| 김연아 | 15000 |
+| 장미란 | 31000 |
+| 추신수 | 33000 |
++--------+-------+
+4 rows in set (0.00 sec)
+
+문제8]-- 인라인 뷰(from 부속질의) 
+     --고객번호가 3 이하인 고객의 고객별 판매액
++--------+-------+
+| name   | total |
++--------+-------+
+| 박지성 | 39000 |
+| 김연아 | 15000 |
++--------+-------+
+2 rows in set (0.00 sec)
+
+문제9]-- 평균 주문금액 이하의 주문에 대해 주문번호와 금액
++---------+-----------+
+| orderid | saleprice |
++---------+-----------+
+|       1 |      6000 |
+|       3 |      8000 |
+|       4 |      6000 |
+|       9 |      7000 |
++---------+-----------+
+4 rows in set (0.00 sec)
+
+#-----------------------------------------------------------------------------------------
+문제10]-- 책 구매를 하지 않은 고객
++--------+--------+---------------+-------+
+| custid | name   | address       | phone |
++--------+--------+---------------+-------+
+|      5 | 박세리 | 대한민국 대전 | NULL     |
++--------+--------+---------------+-------+
+
+
+문제11]-- 책을 구매한 고객 
++--------+--------+-----------------+---------------+
+| custid | name   | address         | phone         |
++--------+--------+-----------------+---------------+
+|      1 | 박지성 | 영국 맨체스타   | 000-5000-0001 |
+|      2 | 김연아 | 대한민국 서울   | 000-6000-0001 |
+|      3 | 장미란 | 대한민국 강원도 | 000-7000-0001 |
+|      4 | 추신수 | 미국 클리블랜드 | 000-8000-0001 |
++--------+--------+-----------------+---------------+
+4 rows in set (0.00 sec)
+
+
+
+문제12]-- 주문이 있는 고객의이름과 주소출력
++--------+-----------------+
+| name   | address         |
++--------+-----------------+
+| 박지성 | 영국 맨체스타   |
+| 김연아 | 대한민국 서울   |
+| 장미란 | 대한민국 강원도 |
+| 추신수 | 미국 클리블랜드 |
++--------+-----------------+
+4 rows in set (0.00 sec)
+
+
+
+문제13]-- 박지성의 총 구매액
++----------------+
+| sum(saleprice) |
++----------------+
+|          39000 |
++----------------+
+1 row in set (0.00 sec)
+
+ 
+문제14]-- 박지성이 구매한 도서의 수
++----------+
+| count(*) |
++----------+
+|        3 |
++----------+
+1 row in set (0.00 sec)
+
+
+문제15]-- 박지성이 구매한 도서의 출판사 수
++-----------+
+| 출판사 수 |
++-----------+
+|         3 |
++-----------+
+1 row in set (0.00 sec)
+
+
+문제16]-- 박지성이 구매한 도서의 이름, 가격, 정가와 판매가격의 차이
++--------------+-------+-----------+
+| 책이름       | 가격  | 정가 차이 |
++--------------+-------+-----------+
+| 축구의 역사  |  7000 |      1000 |
+| 축구의 이해  | 22000 |      1000 |
+| 축구아는여자 | 13000 |      1000 |
++--------------+-------+-----------+
+3 rows in set (0.00 sec)
+
+
+
+문제17]-- 박지성이 구매하지 않은 도서의 이름
++--------+-------------------+------------+-------+
+| bookid | bookname          | publisher  | price |
++--------+-------------------+------------+-------+
+|      4 | 골프 바이블       | 대한미디어 | 35000 |
+|      5 | 피겨 교본         | 굿스포츠   |  8000 |
+|      6 | 역도 단계별기술   | 굿스포츠   |  6000 |
+|      7 | 아구의 추억       | 이상미디어 | 20000 |
+|      8 | 야구를 부탁해     | 이상미디어 | 13000 |
+|      9 | 올림픽 이야기     | 삼성당     |  7500 |
+|     10 | Olympic Champions | Pearson    | 13000 |
++--------+-------------------+------------+-------+
+7 rows in set (0.00 sec)
+
+
+
+문제18] 여러분 박지성관련해서 문제를 하나 만들어보세요
+
+
+문제19]--  마당서점에 도서를 출고하는 출판사의 총 개수
++--------+
+| 총갯수 |
++--------+
+|      6 |
++--------+
+1 row in set (0.00 sec)
+
+
+ select * from orders ;
+ update orders set orderdate='2022-09-01'  where saleprice <10000 ;
+ update orders set orderdate='2022-08-29'  where saleprice <10000 ;
+ select * from orders ;
+ commit ;
+ 
+
+문제20]-- 2022년 8월29일~9월1일 사이에 주문받은 도서의 주문번호
+ select bookid   from orders
+ where orderdate between 
+   date_format("2022-08-29","%Y-%m-%d") and date_format("2022-09-01","%Y-%m-%d");
+
+
+
+문제21]-- 고객의 이름과 고객별 구매액
++--------+-----------------------+
+| name   | sum(orders.saleprice) |
++--------+-----------------------+
+| 박지성 |                 39000 |
+| 김연아 |                 15000 |
+| 장미란 |                 31000 |
+| 추신수 |                 33000 |
++--------+-----------------------+
+4 rows in set (0.00 sec)
+
+
+문제22]--  고객의 이름과 고객이 구매한 도서 목록  orders+customer+book 조인
+ select customer.name, book.bookname
+ from orders left join customer on orders.custid = customer.custid
+ left join book  on orders.bookid = book.bookid;
++--------+-------------------+
+| name   | bookname          |
++--------+-------------------+
+| 박지성 | 축구의 역사       |
+| 박지성 | 축구의 이해       |
+| 김연아 | 피겨 교본         |
+| 장미란 | 역도 단계별기술   |
+| 추신수 | 아구의 추억       |
+| 박지성 | 축구아는여자      |
+| 추신수 | 야구를 부탁해     |
+| 장미란 | Olympic Champions |
+| 김연아 | Olympic Champions |
+| 장미란 | 야구를 부탁해     |
++--------+-------------------+
+10 rows in set (0.00 sec)
+
+
+문제23]--  도서의 판매액 평균보다 자신의 구매액 평균이 더 높은 고객의 이름
++----------+
+| 평균금액 |
++----------+
+|    13000 |
+|    16500 |
++----------+
+2 rows in set (0.00 sec)
+
+
+문제24]--  박지성이 구매한 도서의 출판사와 같은 출판사에서 도서를 구매한 고객의 이름
+ select distinct name
+ from customer join orders ~~~
+
++--------+
+| name   |
++--------+
+| 김연아 |
+| 장미란 |
++--------+
+2 rows in set (0.00 sec)
+
+
+
+
+ --뷰
+ create view 뷰이름
+ as select 문
+
+ -- 주소에 '대한민국'을 포함하는 고객들로 구성된 뷰를 만들고 조회하시오.
+ create view vw_customer
+  as select *
+       from customer
+       where address like '%대한민국%';
+
+ select *  from vw_customer;
+
+ --뷰의수정
+  create or replace view 뷰이름
+  as select 문
+
+ -- vw_customer의 데이터중 대한민국 고객을 영국 주소로 가진 고객으로 변경하시오.
+
+
+ -- (테이블 생성) 출판사에 대한 정보를 저장하는 테이블 Bookcompany(name, address, begin)을 생성하고자 한다.
+ -- name은 기본키며 VARCHAR(20), address는 VARCHAR(20), begin는 DATE 타입으로 선언하여 생성하시오.
+ create table Bookcompany(
+    name varchar(20) primary key,
+    address varchar(20),
+    begin date
+ );
+
+ -- 테이블 수정) Bookcompany 테이블에 인터넷 주소를 저장하는 webaddress 속성을 varchar(30)으로 추가하시오.
+ alter table bookcompany add webaddress varchar(30);
+
+ --  Bookcompany 테이블
+ insert into bookcompany(name, address, begin, webaddress) 
+ values('00아카데미','서울시 서초구','2021-01-01','http://abc.co.kr');
+
+
+ -- 기본 생성
+  create table NewCustomer(
+    custid integer primary key,
+    name varchar(40),
+    address varchar(40),
+    phone varchar(30)
+  );
+
+
+ -- 외례키 설정 (newCustomer의 행이 지워지면 NewOrders의 행도 연쇄로 지워짐)
+ create table NewOrders (
+    orderid integer primary key,
+    custid integer not null,
+    bookid integer not null,
+    saleprice integer,
+    orderdate date,
+    foreign key(custid) references newCustomer(custid) on delete cascade
+  );
+
+
+  // NewBook 테이블에 varchar(13)의 자료형을 가진 isbn 속성으 추가
+  alter table newbook add isbn varchar(13);
+
+  // NewBook 테이블의 isbn 속성의 데이터 타입을 integer형을 변경하시오.
+  alter table newbook modify isbn integer;
+
+  // NewBook 테이블의 isbn 속성을 삭제하시오.
+  alter table newbook drop isbn;
+
+  // NewBook 테이블의 bookid 속성에 not null 제약조건을 적용하시오.
+  alter table newbook modify bookid integer not null;
+
+  // NewBook 테이블의 bookid 속성을 기본키로 변경하시오.
+  alter table newbook add primary key(bookid);
+

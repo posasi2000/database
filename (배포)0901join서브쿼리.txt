@@ -1,0 +1,453 @@
+-- WGHOL 순서로 기술
+-- WHERE,GROUP BY,HAVING, ORDER BY, LIMIT 순서
+
+-- EMP테이블에서 입사일자가 2011년도에 입사한 사원의 사번,이름,업무, 입사일자를 출력하세요.	 
+ select empno,ename,job,hiredate from emp  where hiredate like '2011%';
+ select empno,ename,job,hiredate from emp where date_format(hiredate, '%y') like '11';
+ select ename,  date_format(hiredate,'%Y') as "풀년도" ,date_format(hiredate,'%y')  as "년도"  from emp;
+
+--이름데이터 거꾸로 출력 ex) smith가  htims출력됨
+ SELECT REVERSE(ENAME) FROM EMP;
+
+ SELECT DAYNAME(NOW());   -- 요일의 이름을 반환  수요일 wednesday출력
+ SELECT MONTHNAME(NOW()); -- 월의 이름을 반환  8월이면 Auguest출력
+
+-- 오늘 부터 연말(12월31일까지) 며칠이 남았는지 계산
+ select datediff(now(), '2022-12-31');
+
+-- 지금 시간부터 5시~20분까지 시간이 얼마나 남았는지 계산
+ SELECT TIMEDIFF('17:20:00',CURTIME());
+
+-- CONVERT(값, 데이터형식)
+-- CAST(값, 데이터형식)
+-- SIGNED INTEGER : 부호있는 정수 (-21억 ~ 21억)
+-- UNSIGNED INTEGER : 부호없는 정수 (0 ~ 42억)
+ SELECT AVG(SAL), CONVERT(AVG(SAL), SIGNED INTEGER) as "정수값"  FROM EMP ;
+ SELECT CAST('2022.07.26' AS DATE) as "날짜" , CAST('2022,07,01' AS DATE) as "날짜" ;
+
+
+-- 사원 테이블에서 해당년도 각 월별로 입사한 사원수를 보여주세요.
+ select date_format(hiredate,'%Y-%m') as "년-월" , count(*) as "인원수"  from emp
+ group by date_format(hiredate,'%Y-%m') ;
+
+ select hiredate as "입사일" , count(*) as "인원수"  from emp
+ group by hiredate ;
+
+
+-- 3명 이상인 직업군의 정보를 보여주시오.
+ SELECT JOB as  "직업" , COUNT(*)  as "인원수"  FROM emp
+ GROUP BY JOB
+ HAVING COUNT(*) >=3 ;
+
+
+ -- MYSQL은 디폴트가 AUTO COMMIT
+ SELECT @@autocommit;
+ 
+ -- AUTO COMMIT 해제
+ SET AUTOCOMMIT=0;
+
+
+ drop TABLE EMP_10 ;
+ CREATE TABLE EMP_10
+ AS 
+ SELECT EMPNO, ENAME, JOB, SAL, DEPTNO FROM EMP ;
+
+ select * from emp_10 ;
+ commit ;
+
+
+ drop TABLE EMP_20 ;
+ CREATE TABLE EMP_20
+ AS 
+ SELECT EMPNO, ENAME, JOB, SAL, DEPTNO FROM EMP
+ WHERE 1=0;
+
+ select * from emp_20 ;
+ commit ;
+
+
+ create table  
+ if not exists emp_30
+ as 
+ select * from emp;
+
+ select * from emp_30 ;
+ commit ;
+
+
+ create table dept2
+ as
+ select * from dept;
+
+ select * from dept2;
+
+ create table  
+ if not exists emp2
+ as 
+ select * from emp;
+
+ select * from emp2 ;
+ commit ;
+
+
+제약조건(constraint)이란 데이터의 무결성을 지키기 위해, 데이터를 입력받을 때 실행되는 검사 규칙을 의미한다.
+ not null
+ unique 중복데이터값 저장할수 없음
+ primary key = not null + unique
+ foreign key = 다른테이블과 연결
+ default 
+
+
+SELECT * FROM information_schema.table_constraints ;
+SELECT * FROM information_schema.table_constraints WHERE  table_name ='테이블명????';
+
+
+참고> alter table guestreply  drop constraint  sabun_fk;  
+참고> alter table guestreply  add  constraint  sabun_fk 
+     foreign key(sabun) references guest(sabun) on delete cascade;
+
+
+-- dept2 테이블에 deptno를 pk로 제약조건 주기
+ alter table dept2 add constraint primary key (deptno);
+-- emp2에 empno에 pk제약조건을 추가하세요
+ alter table emp2 add constraint primary key (empno);
+
+-- emp2의 deptno에 fk 제약조건을 추가하기
+ alter table emp2  add  constraint  emp2_dept2이름
+ foreign key(deptno) references dept2(deptno) on delete cascade; ;
+
+ON DELETE
+ ㄴ참조되는 테이블의 값이 삭제될 경우의 동작을 ON DELETE 구문으로 설정
+ON UPDATE
+ ㄴ참조되는 테이블의 값이 수정될 경우의 동작을 ON UPDATE 구문으로 설정
+
+설정할수있는 동작
+ ㄴCASCADE : 참조되는 테이블에서 데이터를 삭제하거나 수정하면 참조하는 테이블에서도 삭제와 수정이 같이 이루어짐
+ ㄴSET NULL : 참조되는 테이블에서 데이터를 삭제하거나 수정하면 참조하는 테이블의 데이터는 NULL로 변경됨
+ ㄴNO ACTION : 참조되는 테이블에서 데이터를 삭제하거나 수정하면 참조하는 테이블의 데이터는 변경되지 않음
+ ㄴSET DEFAULT : 참조되는 테이블에서 데이터를 삭제하거나 수정하면 참조하는 테이블의 데이터는 ?필드의 기본값으로 설정
+ ㄴRESTRICT : 참조하는 테이블에 데이터가 남아 있으면 참조되는 테이블의 데이터를 삭제하거나 수정할 수 없음
+
+
+
+--inner 조인
+SQL> inner조인성공
+   select empno, ename, job, dname
+   from emp inner join  dept
+   on emp.deptno=dept.deptno ;
+
+
+SQL> inner조인성공
+   select  e.empno, e.ename, d.deptno,  d.dname, d.loc
+   from emp e,  dept  d
+   where  e.deptno = d.deptno ; 
+
+
+--NON-EQUI JOIN 넌이퀴조인 
+SQL> 
+  select  empno, ename, sal,  grade 
+  from emp e  inner join   salgrade   s
+  on e.sal   between   s.losal  and s.hisal  ;
+
+
+# emp + dept + salgrade
+ select e.empno, e.ename, d.deptno,  d.dname, e.sal 급여 , s.grade  등급
+ from emp e, dept d, salgrade s
+ where e.deptno = d.deptno and e.sal between s.losal and s.hisal;
+	*-- 총15건출력
+
+
+--  outer join
+-- 부서와 사원 정보를 함께 보여주되 사원이 없는 부서 정보  출력
+-- LEFT OUTER JOIN : 왼쪽 테이블을 기준으로 출력
+-- RIGHT OUTER JOIN : 오른쪽 테이블을 기준으로
+
+SELECT D.DEPTNO, DNAME, ENAME, JOB
+FROM  EMP E  left  OUTER JOIN DEPT D  
+on D.DEPTNO = E.DEPTNO ORDER BY 1;
+
+SELECT D.DEPTNO, DNAME, ENAME, JOB
+FROM EMP E  right  OUTER JOIN  DEPT D  
+on D.DEPTNO = E.DEPTNO ORDER BY 1;
+
+
+SELECT  DISTINCT(E.DEPTNO), D.DEPTNO
+FROM EMP E  left  OUTER JOIN DEPT D
+on D.DEPTNO = E.DEPTNO;
+
+
+SELECT  DISTINCT(E.DEPTNO)  as  "부서코드emp" , D.DEPTNO  as "부서코드dept"
+FROM EMP E  left  OUTER JOIN DEPT D
+USING(deptno)  ;
++-------------+--------------+
+| 부서코드emp | 부서코드dept |
++-------------+--------------+
+|          30 |           30 |
+|          20 |           20 |
+|          10 |           10 |
++-------------+--------------+
+
+
+
+SELECT  DISTINCT(E.DEPTNO) as "부서코드emp" , D.DEPTNO as "부서코드dept"
+FROM EMP E  right  OUTER JOIN DEPT D
+on D.DEPTNO = E.DEPTNO;
++-------------+--------------+
+| 부서코드emp | 부서코드dept |
++-------------+--------------+
+|          10 |            10 |
+|          20 |            20 |
+|          30 |            30 |
+|        NULL |           40 |
+|        NULL |           55 |
++-------------+--------------+
+
+
+-- FULL OUTER JOIN = UNION 연산자를 이용하여 양쪽 테이블에 다 OUTER JOIN을 걸 수 있다.
+-- LEFT OUTER JOIN 을 구하고 + RIGHT OUTER JOIN 을 구한 뒤
+-- 두 결과를 UNION으로 합친다.
+
+ SELECT DISTINCT(A.DEPTNO) as "부서코드1" , B.DEPTNO  as  "부서코드2" 
+ FROM EMP A left OUTER JOIN DEPT B
+ USING (DEPTNO)
+ UNION
+ SELECT DISTINCT(C.DEPTNO)  as "부서코드3"  , D.DEPTNO   as "부서코드4"
+ FROM EMP C right OUTER JOIN DEPT D
+ USING (DEPTNO) ORDER BY 2;
++-----------+-----------+
+| 부서코드1 | 부서코드2 |
++-----------+-----------+
+|        10 |        10 |
+|        20 |        20 |
+|        30 |        30 |
+|      NULL |        40 |
+|      NULL |        55 |
++-----------+-----------+
+rows in set (0.00 sec)
+
+-- EMP테이블에서 보너스를 받는 사원에 대하여 이름,부서명,위치를 출력
+ SELECT ENAME, DNAME, LOC,SAL, COMM
+ FROM EMP E  inner  join  DEPT D
+ USING (DEPTNO)
+ WHERE COMM IS NOT NULL;
++--------+-------+---------+---------+--------+
+| ENAME  | DNAME | LOC     | SAL     | COMM   |
++--------+-------+---------+---------+--------+
+| SMITH  | SALES | CHICAGO | 1600.00 | 300.00 |
+| ALLEN  | SALES | CHICAGO | 1600.00 | 300.00 |
+| WARD   | SALES | CHICAGO | 1250.00 | 500.00 |
+| TURNER | SALES | CHICAGO | 1500.00 |   0.00 |
++--------+-------+---------+---------+--------+
+4 rows in set (0.00 sec)
+
+--셀프조인
+-- 아래의 결과를 출력하는 문장을 작성하에요(관리자가 없는 King을 포함하여 사원을 출력)
+ select e.ename "사원이름", e.empno "Emp#",
+  m.ename "Manager", m.empno "Mgr#"
+  from emp e  left outer join  emp m
+ on e.mgr = m.empno order by 2 asc;
+
++----------+------+---------+------+
+| 사원이름 | Emp# | Manager | Mgr# |
++----------+------+---------+------+
+| SMITH    | 7369 | FORD    | 7902 |
+| ALLEN    | 7499 | BLAKE   | 7698 |
+| WARD     | 7521 | BLAKE   | 7698 |
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| goo      | 8811 | CLARK   | 7782 |
+| lee      | 9900 | CLARK   | 7782 |
++----------+------+---------+------+
+
+
+
+-- "SMITH의 관리자는 FORD 입니다"
+SELECT * FROM EMP;
+
+ SELECT CONCAT(E.ENAME,'의 관리자는 ',E1.ENAME)  AS  "관리정보표시"
+ FROM EMP E  inner  JOIN EMP E1
+ ON E.MGR=E1.EMPNO;
++-------------------------+
+| 관리정보표시            |
++-------------------------+
+| SMITH의 관리자는 FORD   |
+| ALLEN의 관리자는 BLAKE  |
+| WARD의 관리자는 BLAKE   |
+ ~~~~~~~~~~~~~~~~~~~~~~~
+| lee의 관리자는 CLARK    |
+| choi의 관리자는 CLARK   |
++-------------------------+
+
+
+
+# SUBQUERY
+1). 서브 쿼리 이용하기
+- 서브 쿼리란 SELECT한 결과를 조건 비교에 이용하거나
+  UPDATE 또는 DELETE 등에 사용할 때 이용하거나, 
+  SELECT한 결과를 조건으로 이용하여 다시 
+  SELECT를 하는 것처럼 DML 안에
+  다시 SELECT구문이 포함되는 형태를 말한다.
+
+- 서브 쿼리는 여러 절에서 사용가능하다.
+- NESTED SUBQUERY 는 MAIN QUERY 이전에 한번만 수행되며,
+  SUBQUERY의 결과를 MAIN QUERY에서 조건으로 사용된다.
+
+
+* 서브쿼리는 괄호로 묶어야 한다.
+* 두 종류의 비교연산자들이 서브쿼리에 사용된다.
+	=,>,>=, <,ㅡ=,<>,!=
+	IN, NOT IN, ANY
+* 서브쿼리는 연산자의 오른쪽에 나타나야 한다.
+* 서브쿼리는 많은 SQL명령에서 사용가능하다.
+* 서브쿼리는 ORDER BY 절을 포함할 수 없다. 
+
+2) SUBQUERY를 사용할 수 있는 절
+- WHERE, HAVING, UPDATE
+- INSERT 구문의 INTO
+- UPDATE 구문의 SET
+- SELECT의 FROM절
+
+3) SUBQUERY의 유형
+- 단일행 서브쿼리: 
+	SELECT문장으로부터 오직 하나의 행만을 검색하는 질의
+- 다중행 서브쿼리:	 
+	SELECT문장으로부터 하나 이상의 행을 검색하는 질의
+- 다중열 서브쿼리:	  
+	SELECT문장으로부터 하나 이상의 열을 검색하는 질의
+
+[실습]
+- 사원테이블에서 scott의 급여보다 많은 사원의 사원번호,이름,업무,급여를 출력하세요.
+	SELECT sal FROM emp WHERE ename='SCOTT';  #--결과 3000출력
+	SELECT empno,ename,job,sal FROM emp WHERE sal > 3000
+
+	SELECT empno,ename,job,SAL FROM 
+	 EMP WHERE SAL >
+	 (SELECT sal FROM EMP WHERE ename='SCOTT' );
+	 +-------+-------+-----------+---------+
+	| empno | ename | job       | SAL     |
+	+-------+-------+-----------+---------+
+	|  7839 | KING  | PRESIDENT | 5000.00 |
+	|  8811 | goo   | teacher   | 7900.00 |
+	|  9911 | choi  | teacher   | 4500.00 |
+	+-------+-------+-----------+---------+
+	3 rows in set (0.00 sec)
+
+4) SUBQUERY에서 그룹함수 사용
+  4_1) 단일행을 반환하는 subquery
+	단일행을 반환하는 subquery에 그룹함수를 사용하여
+	메인 쿼리에서 데이터를 출력할 수 있다.
+	
+  4_2) subquery를 갖는 having절
+	사원테이블에서 사원의 급여가 20번 부서의 최소급여 보다 많은 부서를 출력하세요.	
+	SELECT deptno, MIN(sal) FROM EMP GROUP BY deptno
+	HAVING MIN(sal) > (SELECT MIN(al) FROM EMP WHERE deptno=20);
+
+  4_3) 다중행 서브쿼리
+	하나 이상의 행을 반환하는 서브쿼리를 다중행 서브쿼리라고 함
+	다중행 서브쿼리는 단일 행 연산자 대신 다중행 연산자를 사용한다.
+	다중행 연산자는 하나 이상의 값을 요구한다.		
+	다중행 SUBQUERY 연산자.
+	* IN 연산자
+	* EXISTS 연산자
+
+	* IN 연산자
+	 - 업무별로 최대 급여를 받는 사원의 
+	 사원번호와 이름을 출력하세요.
+	  SELECT ename,job,sal FROM EMP  
+	   WHERE  ( job , sal) 
+	   IN (SELECT job, MAX(sal) FROM EMP GROUP BY job);
+	  +-------+-----------+---------+
+	| ename | job       | sal     |
+	+-------+-----------+---------+
+	| SMITH | CLERK     | 1600.00 |
+	| ALLEN | SALESMAN  | 1600.00 |
+	| JONES | MANAGER   | 2975.00 |
+	| SCOTT | ANALYST   | 3000.00 |
+	| KING  | PRESIDENT | 5000.00 |
+	| FORD  | ANALYST   | 3000.00 |
+	| goo   | teacher   | 7900.00 |
+	+-------+-----------+---------+
+	7 rows in set (0.00 sec)
+
+	
+	* EXISTS 연산자
+	 - EXISTS 연산자를 사용하면 서브쿼리의 데이터가 존재하는가의 
+	   여부를 먼저 따져 존재하는 값들만을 결과로 반환해 준다. 
+	 - SUBQUERY에서 적어도 1개의 행을 RETURN하면 논리식은 참이고 
+	   그렇지 않으면 거짓 입니다.
+
+	예제)사원을 관리할 수 있는 사원의 정보를 보여 줍니다. 
+	  SELECT empno, ename, sal
+	  FROM emp e
+  	 WHERE EXISTS (SELECT empno FROM emp WHERE e.empno = mgr) ;
+	 +-------+-------+---------+
+	| empno | ename | sal     |
+	+-------+-------+---------+
+	|  7902 | FORD  | 3000.00 |
+	|  7698 | BLAKE | 2850.00 |
+	|  7839 | KING  | 5000.00 |
+	|  7566 | JONES | 2975.00 |
+	|  7788 | SCOTT | 3000.00 |
+	|  7782 | CLARK | 2450.00 |
+	+-------+-------+---------+
+	6 rows in set (0.00 sec)
+
+  4_4) 다중열 SUBQUERY
+	다중 열 서브쿼리란 서브쿼리의 결과값이 두개 이상의 컬럼을 반환하는 서브쿼리를 의미 	
+	 - 서브쿼리가 한번 실행되면서 모든 조건을 검색해서  주 쿼리로 넘겨 준다.
+	실습] 업무별로 최소 급여를 받는 사원의 사번,이름,업무,부서번호를 출력하세요. 업무별로 정렬하세요.
+		SELECT empno,ename,job,sal,deptno FROM emp 
+		WHERE (job, sal) in (SELECT job, MIN(sal) FROM EMP GROUP BY job)
+		ORDER BY job;
+	+-------+-------+-----------+---------+--------+
+	| empno | ename | job       | sal     | deptno |
+	+-------+-------+-----------+---------+--------+
+	|  7788 | SCOTT | ANALYST   | 3000.00 |     20 |
+	|  7902 | FORD  | ANALYST   | 3000.00 |     20 |
+	|  7900 | JAMES | CLERK     |  950.00 |     30 |
+	|  7782 | CLARK | MANAGER   | 2450.00 |     30 |
+	|  7839 | KING  | PRESIDENT | 5000.00 |     10 |
+	|  7521 | WARD  | SALESMAN  | 1250.00 |     30 |
+	|  9900 | lee   | teacher   |  350.00 |     10 |
+	+-------+-------+-----------+---------+--------+
+7 rows in set (0.00 sec)
+  4_5) 서브쿼리에서의 NULL값
+   - 서브쿼리에서 null값이 반환되면 주 쿼리 에서는 어떠한 행도 반환되지 않는다.
+
+5) FROM절에서의 서브쿼리(INLINE VIEW)
+	SUBQUERY는 FROM절에서도 사용 가능하다.
+	하나의 테이블에서 자료의 양이 많을 경우 FROM절에 테이블 전체를
+	기술하여 사용하면 효율이 떨어질 수 있다.
+	이런 경우 필요한 행과 열만 선택하여 FROM절에 기술하면 오러클
+	서버가 최적화 단계에서 효율적인 검색을 할 수 있다.
+	이처럼 FROM절에 기술한 서브쿼리는 마치 VIEW와 같은 역할을 한다.
+	이런 것을 INLINE VIEW라고 한다.
+
+	[실습]
+	EMP와 DEPT 테이블에서 업무가 MANAGER인 사원의 이름, 업무,부서명, 근무지를 출력
+	- 아래는 inline view를 이용하여 구하는 경우
+	 select ename,job, a.deptno, b.dname, b.loc from
+	 (select * from emp where job=upper('manager')) a 
+	 join dept b on a.deptno=b.deptno; 
+	+-------+---------+--------+----------+---------+
+	| ENAME | JOB     | DEPTNO | dname    | loc     |
+	+-------+---------+--------+----------+---------+
+	| JONES | MANAGER |     20 | RESEARCH | DALLAS  |
+	| BLAKE | MANAGER |     30 | SALES    | CHICAGO |
+	| CLARK | MANAGER |     30 | SALES    | CHICAGO |
+	+-------+---------+--------+----------+---------+
+	3 rows in set (0.00 sec)
+
+
+       -아래는 스칼라 서브쿼리
+	 SELECT ename,
+	     (SELECT dname FROM dept d WHERE d.deptno = e.deptno)  as "부서명"
+	   FROM emp e
+	   WHERE job ='MANAGER';
+	+-------+----------+
+	| ename | 부서명     |
+	+-------+----------+
+	| JONES | RESEARCH |
+	| BLAKE | SALES    |
+	| CLARK | SALES    |
+	+-------+----------+ 
+
