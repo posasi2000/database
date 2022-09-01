@@ -1,0 +1,50 @@
+*--------------------------------------------------------------------------------
+DROP PROCEDURE  if exists EMP_INFO;
+DELIMITER @@
+CREATE PROCEDURE EMP_INFO(IN P_NO INT)
+ BEGIN
+    DECLARE V_EMPNO INT;
+    DECLARE V_ENAME VARCHAR(20);
+    DECLARE V_JOB VARCHAR(9);
+    DECLARE V_SAL DECIMAL(7,2);
+    
+    SELECT EMPNO, ENAME, job, SAL 
+     INTO V_EMPNO, V_ENAME, v_job, V_SAL
+     FROM EMP WHERE EMPNO = P_NO;
+	
+    SELECT V_EMPNO  사번,  V_ENAME 사원명,  v_job 업무 , V_SAL 급여; 
+ END @@
+ DELIMITER ;
+
+mysql> CALL EMP_INFO(7788);
+
++------+--------+---------+---------+
+| 사번 | 사원명 | 업무    | 급여    |
++------+--------+---------+---------+
+| 7788 | SCOTT  | ANALYST | 3000.00 |
++------+--------+---------+---------+
+1 row in set (0.01 sec)
+
+
+*--------------------------------------------------------------------------------
+ DROP PROCEDURE  if exists guest_ADD;
+
+ DELIMITER //
+ CREATE PROCEDURE guest_ADD(
+	IN psabun INT,
+	IN pname VARCHAR(10),
+	IN ptitle VARCHAR(20),
+	IN pwdate date,
+	IN ppay int
+  )
+  BEGIN
+   INSERT INTO guest VALUES(psabun, pname, ptitle, pwdate, ppay);
+  END //
+  DELIMITER ;
+
+  CALL guest_ADD(7989, 'last', 'summer', now(), 21);
+  SELECT * FROM guest;
+
+*--------------------------------------------------------------------------------
+
+

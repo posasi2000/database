@@ -1,0 +1,355 @@
+
+https://www.mysql.com/
+ ㄴ다운로드 (GPL)클릭
+https://dev.mysql.com/downloads/mysql/
+
+교재 https://github.com/7ieon/SQLtune
+C:\db_data> ~~mysql.exe -uroot  -p --port 3306 < data_setting.sql
+
+
+#관리자 6명
+select * from  emp
+ where  empno  in ( select  mgr from emp ) ;
+
+#비관리자 11명출력인데 없습니다
+select * from  emp
+ where  empno not  in ( select  mgr from emp ) ; #Empty set (0.00 sec)
+
+select * from  naver.emp
+ where  empno not  in ( select  ifnull(mgr,0) from naver.emp ) ;
+
+select * from  naver.emp
+ where  exists ( select  mgr from emp m  where  naver.emp.empno=m.mgr ) ;
+*-----------------------------------------------------------------
+explain
+select * from  emp
+ where  empno not  in ( select  ifnull(mgr,0) from naver.emp ) ;
+
+explain
+select * from  emp
+ where not exists ( select  mgr from emp m  where  emp.empno=m.mgr ) ;
+
+explain
+select * from  naver.emp
+ where  empno not  in ( select  mgr  from emp m where m.mgr is not null  ) ;
+
+
+
+book테이블 + 고객customer + 주문orders ===> 박지성
+emp테이블 + dept테이블  ===> mgr필드, job필드=manager
+
+서브쿼리
+ select 필드1, 필드2,  ( 스칼라필드select ~~ ) as new필드
+ from ( table명역할=select ~~ lineview)
+ where  필드 연산  (값=select ~~~)
+ 
+
+조인-inner,left,right,nature,self,full아웃조인( left  union right)
+  select e.empno, e.ename, d.dname, e.deptno,  d.dloc
+  from emp e, dept d
+  where e.deptno=d.deptno ;
+
+  select e.empno, e.ename, d.dname, e.deptno,  d.dloc
+  from emp e inner생략 join  dept d
+  on e.deptno=d.deptno ;
+
+  select e.empno, e.ename, d.dname, e.deptno,  d.dloc
+  from emp e inner생략 join  dept d
+  using(deptno) ;
+
+
+*-------------------------------------------------------------------------
+--emp테이블 job필드 매니저   이름ename  job  deptno  dname  loc  
+첫번째경우
+ select ename, job, d.deptno, d.dname,  d.loc
+ from emp  inner join dept d  
+ on emp.deptno = d.deptno  where job='manager';
+
+두번째경우
+ select ename, job, d.deptno, d.dname,  d.loc
+ from ( select * from emp where job='manager') e  
+ inner join dept d   on e.deptno = d.deptno  ;
++-------+---------+--------+----------+---------+
+| ENAME | JOB     | deptno | dname      | loc     |
++-------+---------+--------+----------+---------+
+| JONES | MANAGER |     20 | RESEARCH | DALLAS  |
+| BLAKE | MANAGER |     30 | SALES    | CHICAGO |
+| CLARK | MANAGER |     30 | SALES    | CHICAGO |
++-------+---------+--------+----------+---------+
+
+ename, job,  dname출력 
+3번째경우  조인사용안하고  스칼라서브쿼리구현
+ select ename, job ,( select dname from dept d where d.deptno=e.deptno) as "부서명"
+ from  emp e  
+ where job = 'manager' ;
+
+
+4번째  join사용안하고, sub쿼리사용안하고
+      직책별 job별 급여의 평균출력   평균은 3,000이상
+   where job !=  'manager' ;  매니저아닌사람의 총급여 avg(sal) 3,000이상의 
+   job별  평균급여출력 3자릿수에 , format()     
+ 
+  select  job , avg(sal)  myavg 
+  from emp 
+  where  job !=  'manager' 
+  group by job 
+  having  myavg >= 3000
+  order by myavg  desc ;
++-----------+-------------+
+| job       | myavg       |
++-----------+-------------+
+| PRESIDENT | 5000.000000 |
+| teacher   | 3337.500000 |
+| ANALYST   | 3000.000000 |
++-----------+-------------+
+3 rows in set (0.00 sec)
+
+
+
+  order by  평균급여 많은순으로 출력 
+-- WGHOL 순서로 기술
+-- WHERE,GROUP BY,HAVING, ORDER BY, LIMIT 순서
+
+
+5번째 client, corder 주문한적이 있는 고객데이터출력   ct_no, ct_name, ct_grade
+  in( ), exists( ), inner join 
+
+ select * from client
+ where ct_no  in ( select distinct ct_no from corder );
+
+ select * from client
+ where ct_no  in ( select  ct_no from corder );
+
+ select * from client
+ where  exists ( select  ct_no from corder  where  corder.ct_no = client.ct_no) ;
+
+ select   c.*  from  client c  inner join  corder o
+ on c.ct_no = o.ct_no  ;  
+
+ select distinct  c.*  from  client c  inner join  corder o
+ on c.ct_no = o.ct_no  ;
+
+
+*-----------------------------------------------------------------------------------------------------
+-- book테이블, customer고객테이블, orders주문테이블
+   customer고객테이블, orders주문테이블
+ 
+구매총액 sum(orders주문테이블  saleprice) 
+ 박지성,김연아,장미란 고객  고객custid <= 3  
+ 총금액 86,500원
+ exists( ), inner join 
+
+  select  concat(format(sum(saleprice),0), "원")  as  "세사람구매금액" 
+  from  orders o  inner join customer c
+  on  o.custid = c.custid 
+  where  o.custid <=3 ;
+
++----------------+
+| 세사람구매금액 |
++----------------+
+| 85,000원       |
++----------------+
+1 row in set (0.00 sec)
+
+  select  concat(format(sum(saleprice),0), "원")  as  "세사람구매금액" 
+  from  orders o 
+  where  exists ( select * from  customer c where  o.custid = c.custid  and   o.custid <=3 );
+
+
+참고해서    
+-- select * from client
+-- where  exists ( select  ct_no from corder  where  corder.ct_no = client.ct_no) ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*----------------------------------------------------------
+web브라우저 언어 hmtl
+빅데이터 시각화및 학습 python
+데이터베이스 데이터언어 SQL
+SQL-DDL,DML,DCL
+  ddl-create,alter,drop
+  dml-insert,select,update,delete
+  dcl-commit/rollback, grant/revoke
+
+drop table test ;
+create table test (code int, title varchar(20) , hit int) ;
+무시 alter table test add phone  varchar(16) ;
+
+insert into test(code, title, hit) values(2200,  'aaa', 7 );
+insert into test values( 9900 ,  'bbb', 5 );
+select 필드1, 필드2  from  테이블 ;
+select *  from  테이블 ;
+select *  from  테이블  where hit > 24  ; 
+update test  set  title='월요일'  where  code = 9900 ;
+delete  *  from test  ; 문법의에러 
+delete    from test  ; 절대금지 모든데이터 전부삭제 
+delete    from test   where  code = 2200 ;
+
+
+윈도우시작
+ ㄴmysql 8.0 command Line클릭
+   비번번호: 1234
+
+
+53페이지 서브쿼리
+ 스칼라서브쿼리 - 댓글갯수
+ 인라인뷰쿼리 select 필드1, 필드 from  ( 다시 select ~~ );
+ 중첩쿼리 select ~~~ where  name=( select ~~) ;
+
+board테이블(글쓴이codePK, 글쓴이, 글제목, 날짜,~~~~)
+boardreply댓글테이블(댓글번호num, 저자, 내용, 날짜, code필드FK)
+
+ 3300 , '길동', '월요일'[2] , ~~~~
+   |- 댓글1건
+   |- 댓글2건
+
+join - inner조인, 외부조인(left,right), self조인, Non-equi
+
+	create database naver ;
+	use naver ;
+	show tables;	
+
+	drop table  guest  ;
+	create table  guest  (
+	   sabun int, 
+ 	   name varchar(10) ,
+	   title varchar(20) ,
+	   wdate  date ,
+	   pay  int 
+           );
+	
+	commit ;
+	insert into guest(sabun,name,title,wdate,pay) values( 7700, 'kim', 'monday', now(), 51) ;
+	insert into guest values( 1100, 'one', 'book', now(), 27) ;
+	insert into guest values( 2200, 'two', 'note', now(), 81) ;
+	insert into guest values( 3300, 'lee', 'rain', now(), 56) ;
+	insert into guest values( 4400, 'aws', 'snow', now(), 74) ;
+	commit ;
+	select * from  guest ;
+
+      create table  guest  (
+	   sabun int, 
+ 	   name varchar(10) ,
+	   title varchar(20) ,
+	   wdate  date ,
+	   pay  int 
+        );
+	title필드컬럼 삭제
+	pay필드컬럼  hit필드명변경
+	gender필드  bool타입 default  true
+	name필드 varchar(16) 자릿수변경
+	guest테이블명  guestInfo테이블명 변경 
+
+ desc guest ;
+ alter table  guest  drop   title ;
+ alter table  guest  change pay  hit int(3)  ;
+ alter table  guest  add  gender bool  default true;
+ alter table  guest  modify name varchar(16)
+ show tables;
+ commit ;
+ alter table  guest  rename  guestInfo ;
+ show tables;
+ commit ;
+  
+ system cls ;
+ alter table  guestInto  rename  board ;
+ show tables;
+ commit ;
+
+ insert into board values( 5501, 'kim' , now(), 6, false) ;
+ insert into board values( 5503, 'lee' , now(), 37, 1) ;
+ insert into board values( 5507, 'goo' , now(), 72, 0) ;
+ insert into board values( 5509, 'aws' , sysdate(), 32, 0) ;
+ commit ;
+ select * from board ;
+
+ 문제] hit조회수 컬럼데이터  50~80  between and  
+	select  *  from board  where   hit bewteen  50  and  80 ;  --권장
+	select  *  from board  where   hit >= 50  and  hit <= 80 ;
+
+ 문제] name이름데이터에서 kim 아닌사람 출력   <> , != ,  not in
+       select  *  from board  where  name  <>  'kim'  ;
+       select  *  from board  where  name  !=  'kim'  ;
+       select  *  from board  where  name  not in( 'kim' ) ;
+       에러 select  *  from board  where  name  ==  'kim'  ;
+       select  *  from board  where  name  =  'kim'  ; --정답
+       select  *  from board  where  name  in ( 'kim' , 'lee' ) ;
+       select  *  from board  where  name= 'kim'  or  name='lee'  ;
+
+ 문제] sabun필드 오름차순으로 소트 
+    select  *  from  board  order  by  sabun  ;
+
+ 문제] 5503 lee 데이터  hit데이터 12로변경
+       update board set hit=12 where  sabun = 5503 ; --권장  
+       update board set hit=12 where  name = 'lee' ; 
+       update board set hit=12 where  sabun = 5503  and   name = 'lee'  ; --권장
+
+ 문제] hit >= 40 큰데이터의  sabun데이터 정순으로 소트 
+   select  *  from  board  where  hit >=40  order  by  sabun  ;
+   select  *  from  board  where  hit >=40  order  by  sabun  asc ;
+   select  *  from  board  where  hit >=40  order  by  sabun  desc ;  --역순
+   에러발생 select  *  from  board   order  by  sabun   where  hit >=40;
+
+
+	김밥, 꼬마김밥, 양반김, 김치, 김치찌개, 총각김치, 파김치 
+
+	김%으로 시작하는 데이터  ==> 김밥,김치
+	%김으로 끝나는 데이터   ==> 양반김
+	%김치% 포함한 데이터   ==> 김치, 김치찌개, 총각김치, 파김치  
+        select ~~ where food  like '김%' ;
+        select ~~ where food  like  '%김' ;
+        select ~~ where food  like '%김치%' ;
+
+       숫자 sum(), avg(), min(),max(),count(),round(),format(수치, 2),ceil(), floor()
+
+      문자 left(),right(),mid(),replace(),concat(),trim(), upper(), lower(), reverse()
+
+      날짜 now(), sysdate(), current_timestamp(), year(), month(), dayofweek()
+           curdate(), date_format( ,  '%W %y %m %d  %H' ), adddate(wdate, 3) 
+
+  select date_format( now(), '%y년 %m월 %d일 %W %H시 %i분 %s초' ) ;
+  select sabun, name, wdate 주문날짜 , adddate(wdate, 3) 도착날짜  from  board  ; 
+
+ https://github.com/7ieon/SQLtune
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
